@@ -6,7 +6,7 @@ using Soenneker.Utils.HttpClientCache.Registrar;
 namespace Soenneker.Vercel.HttpClients.Registrars;
 
 /// <summary>
-/// Registers the OpenAPI HttpClient wrapper for dependency injection.
+/// Registers authenticated HTTP clients for the Vercel REST API.
 /// </summary>
 public static class VercelOpenApiHttpClientRegistrar
 {

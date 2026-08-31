@@ -11,13 +11,13 @@ using Soenneker.Utils.HttpClientCache.Abstract;
 
 namespace Soenneker.Vercel.HttpClients;
 
-///<inheritdoc cref="IVercelOpenApiHttpClient"/>
 public sealed class VercelOpenApiHttpClient : IVercelOpenApiHttpClient
 {
     private readonly IHttpClientCache _httpClientCache;
     private readonly IConfiguration _config;
+    private readonly string _cacheKey = $"{nameof(VercelOpenApiHttpClient)}:{Guid.NewGuid():N}";
 
-    private const string _prodBaseUrl = "https://api.vercel.com/v6/";
+    private const string _prodBaseUrl = "https://api.vercel.com/";
 
     public VercelOpenApiHttpClient(IHttpClientCache httpClientCache, IConfiguration config)
     {
@@ -27,12 +27,12 @@ public sealed class VercelOpenApiHttpClient : IVercelOpenApiHttpClient
 
     public ValueTask<HttpClient> Get(CancellationToken cancellationToken = default)
     {
-        return _httpClientCache.Get(nameof(VercelOpenApiHttpClient), (config: _config, baseUrl: _config["Vercel:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
+        return _httpClientCache.Get(_cacheKey, (config: _config, baseUrl: _config["Vercel:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
-            var apiKey = state.config.GetValueStrict<string>("Vercel:ApiKey");
+            string accessToken = state.config["Vercel:AccessToken"] ?? state.config.GetValueStrict<string>("Vercel:ApiKey");
             string authHeaderName = state.config["Vercel:AuthHeaderName"] ?? "Authorization";
             string authHeaderValueTemplate = state.config["Vercel:AuthHeaderValueTemplate"] ?? "Bearer {token}";
-            string authHeaderValue = authHeaderValueTemplate.Replace("{token}", apiKey, StringComparison.Ordinal);
+            string authHeaderValue = authHeaderValueTemplate.Replace("{token}", accessToken, StringComparison.Ordinal);
 
             return new HttpClientOptions
             {
@@ -45,20 +45,13 @@ public sealed class VercelOpenApiHttpClient : IVercelOpenApiHttpClient
         }, cancellationToken);
     }
 
-    /// <summary>
-    /// Releases resources used by the current instance.
-    /// </summary>
     public void Dispose()
     {
-        _httpClientCache.RemoveSync(nameof(VercelOpenApiHttpClient));
+        _httpClientCache.RemoveSync(_cacheKey);
     }
 
-    /// <summary>
-    /// Asynchronously releases resources used by the current instance.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     public ValueTask DisposeAsync()
     {
-        return _httpClientCache.Remove(nameof(VercelOpenApiHttpClient));
+        return _httpClientCache.Remove(_cacheKey);
     }
 }
