@@ -11,6 +11,7 @@ using Soenneker.Utils.HttpClientCache.Abstract;
 
 namespace Soenneker.Vercel.HttpClients;
 
+/// <inheritdoc cref="IVercelOpenApiHttpClient" />
 public sealed class VercelOpenApiHttpClient : IVercelOpenApiHttpClient
 {
     private readonly IHttpClientCache _httpClientCache;
