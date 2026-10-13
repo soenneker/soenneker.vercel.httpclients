@@ -30,7 +30,7 @@ public sealed class VercelOpenApiHttpClient : IVercelOpenApiHttpClient
     {
         return _httpClientCache.Get(_cacheKey, (config: _config, baseUrl: _config["Vercel:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
-            string accessToken = state.config["Vercel:AccessToken"] ?? state.config.GetValueStrict<string>("Vercel:ApiKey");
+            string accessToken = state.config["Vercel:AccessToken"] ?? state.config.GetStringStrict("Vercel:ApiKey");
             string authHeaderName = state.config["Vercel:AuthHeaderName"] ?? "Authorization";
             string authHeaderValueTemplate = state.config["Vercel:AuthHeaderValueTemplate"] ?? "Bearer {token}";
             string authHeaderValue = authHeaderValueTemplate.Replace("{token}", accessToken, StringComparison.Ordinal);
